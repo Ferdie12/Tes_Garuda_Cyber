@@ -1,25 +1,24 @@
-import prisma from "../prisma/config.js";
+import productService from "../service/product.js"
 
 export default class Product {
     static getAll = async (req,res,next) => {
         try {
-            const product = await prisma.product.findMany();
+            const product = await productService.getAll()
 
             return res.status(200).json({
                 status: true,
                 message: "succes get all product",
                 data: product
             })
-        } catch (error) {
-            next(error)
+        } catch (e) {
+            next(e)
         }
     }
 
     static getbyId = async (req,res,next) => {
         try {
             const {id} = req.params
-            const product = await prisma.product.findUnique({where: {id: +id}});
-
+            const product = await productService.getById(id);
 
             return res.status(200).json({
                 status: true,
@@ -27,8 +26,8 @@ export default class Product {
                 total: 1,
                 data: product
             })
-        } catch (error) {
-            next(error)
+        } catch (e) {
+            next(e)
         }
     }
 

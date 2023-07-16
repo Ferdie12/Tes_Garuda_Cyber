@@ -6,6 +6,6 @@ const router = express.Router();
 router.get("/product", Product.getAll);
 router.get("/product/:id", Product.getbyId);
 router.get('/voucher', Voucher.getVoucher);
-router.get('/use', Voucher.useVoucher);
+// router.get('/use', Voucher.useVoucher);
 
 export default router;

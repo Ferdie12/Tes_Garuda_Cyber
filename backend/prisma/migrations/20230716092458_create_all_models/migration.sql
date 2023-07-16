@@ -20,6 +20,7 @@ CREATE TABLE "product" (
 -- CreateTable
 CREATE TABLE "voucher" (
     "id" SERIAL NOT NULL,
+    "user_id" INTEGER,
     "code" TEXT NOT NULL,
     "value" DOUBLE PRECISION NOT NULL,
     "exp" DATE NOT NULL,
@@ -30,3 +31,6 @@ CREATE TABLE "voucher" (
 
 -- CreateIndex
 CREATE UNIQUE INDEX "user_email_key" ON "user"("email");
+
+-- AddForeignKey
+ALTER TABLE "voucher" ADD CONSTRAINT "voucher_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE SET NULL ON UPDATE CASCADE;
