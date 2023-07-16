@@ -1,6 +1,6 @@
 import Navbar from '../components/navbar';
 import { useState, useEffect, Fragment } from 'react';
-import Link from 'next/link';
+import axios from 'axios';
 
 const Dashboard = () => {
   const [products, setProducts] = useState();
@@ -15,10 +15,13 @@ const Dashboard = () => {
     return formatter.format(number);
   }
 
+  const fetchData = async () => {
+      const response = await axios.get("http://localhost:5000/product");
+      setProducts(response.data.data);
+  };
+
   useEffect(() => {
-    fetch('http://localhost:5000/product')
-      .then((response) => response.json())
-      .then((data) => setProducts(data.data));
+    fetchData();
   }, []);
 
   const handleOnClick = (productId) => {
@@ -28,7 +31,7 @@ const Dashboard = () => {
   return (
     <Fragment>
       <Navbar />
-      <h1 className="text-sm font-bold my-9 text-center text-cyan-500 sm:text-3xl">List All Products</h1>
+      <h1 className="text-sm font-bold my-9 text-center text-secondary sm:text-3xl">List All Products</h1>
       <div className="whitespace-nowrap lg:whitespace-normal lg:grid grid-cols-3 gap-5 overflow-auto mt-5 mx-4 md:mx-8 lg:mx-28 py-5">
         {products &&
           products.map((product) => (
@@ -54,11 +57,11 @@ const Dashboard = () => {
                   <span className="text-base text-gray-500 font-medium"></span>
                 </h1>
                 <h1 className="text-center text-sm text-gray-500 font-medium">
-                  Ini adalah product alat elektronik kualitas Terbaik!
+                This is a high-quality electronic product!
                 </h1>
                 <button
                   onClick={() => handleOnClick(product.id)}
-                  className="bg-white border border-gray-300 rounded-full px-10 py-3 text-sm font-semibold tracking-[2px] duration-300 transition-all hover:bg-slate-200 hover:text-cyan-500"
+                  className="bg-white border border-gray-300 rounded-full px-10 py-3 text-sm font-semibold tracking-[2px] duration-300 transition-all hover:bg-primary hover:text-secondary"
                 >
                   ORDER
                 </button>

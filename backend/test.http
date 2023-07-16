@@ -1,2 +1,9 @@
-GET http://localhost:5000/voucher
-user_id:5
+post http://localhost:5000/api/register
+Content-Type: application/json
+
+{
+    "name": "fer",
+    "email": "fer@gmail.com",
+    "password": "Ferdie123",
+    "confirmpassword": "Ferdie123"
+}

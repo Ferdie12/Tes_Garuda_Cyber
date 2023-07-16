@@ -1,52 +1,65 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { useRouter } from 'next/router';
+import Cookies from "js-cookie";
 
 const productDetail = () => {
 
     const [products, setProducts] = useState();
+    const [use, setUse]= useState("Gunakan");
     let [total, setTotal] = useState();
     const [totalPrice, setTotalPrice] = useState(0);
+    const [active, setActive]= useState(false);
     const [voucher, setVoucher] = useState();
-    const [kupon, setKupon] = useState();
-    console.log(kupon);
     const router = useRouter();
-    const [id, setId] = useState();
     let productId;
 
-    useEffect(()=> {
-      if (totalPrice >= 2000000) {
-        if (kupon) {
-          setVoucher(kupon);
-        } else {
-          fetch(`http://localhost:5000/voucher?total_price=${totalPrice}&code=${voucher}`)
-            .then((response) => response.json())
-            .then((data) => {
-              setVoucher(data.data.code);
-              setKupon(data.data.code);
-              setId(data.data.id);
-            });
-        }
+    const fetchVoucher= async() => {
+      const authorization = Cookies.get("token");
+      const id = Cookies.get("user_id");
+      if(authorization){
+        axios.defaults.headers.common["authorization"] = Cookies.get("token");
+        const response = await axios.get("http://localhost:5000/api/voucher");
+        setVoucher(response.data.data);
+      } else if(id){
+        axios.defaults.headers.common["user_id"] = Cookies.get("user_id");
+        const response = await axios.get("http://localhost:5000/api/voucher");
+        setVoucher(response.data.data);
       } else {
-        setVoucher("");
+        const response = await axios.get("http://localhost:5000/api/voucher");
+        Cookies.set("user_id", response.data.id, {
+          expires: 1
+        });
+        setVoucher(response.data.data);
       }
-    }, [totalPrice])
+    }
+  
+    useEffect(()=> {
+      fetchVoucher();
+    }, [])
     
-    useEffect(() => {
+    const fetchProduct = async () => {
       if (router.query.id) {
         productId = router.query.id;
         console.log(productId);
-  
-        fetch(`http://localhost:5000/product/${productId}`)
-          .then((response) => response.json())
-          .then((data) => {
-            setProducts(data.data)
-            setTotal(data.total)
-            setTotalPrice(data.data.price)
-          });
+        const response = await axios.get(`http://localhost:5000/product/${productId}`);
+        setProducts(response.data.data)
+        setTotal(response.data.total)
+        setTotalPrice(response.data.data.price)
       }
+    }
+    
+    useEffect(() => {
+      fetchProduct();
     }, [router.query.id]);
 
-    
+    useEffect(()=> {
+      if(totalPrice >= 2000000){
+        setActive(true)
+      } else {
+        setActive(false)
+      }
+    }, [totalPrice])
     
       function formatCurrency(number) {
         const formatter = new Intl.NumberFormat('id-ID', {
@@ -80,12 +93,18 @@ const productDetail = () => {
         window.location.href = "/";
       }
 
-      function handleClickGunakan(){
-        fetch(`http://localhost:5000/use?total_price=${totalPrice}&code=${voucher}&id=${id}`)
-            .then((response) => response.json())
-            .then((data) => {
-              setTotalPrice(data.data);
-            });
+      async function handleClickGunakan(){
+        try {
+          const response = await axios.get(`http://localhost:5000/use?total_price=${totalPrice}&code=${voucher.code}`);
+          if (response.status === 200) {
+            setTotalPrice(response.data.data);
+            setUse("Voucher telah Digunakan");
+          } else {
+            setUse(response.data.message);
+          }
+        } catch (error) {
+          setUse("Voucher invalid");
+        }
       }
     return (
         <div className="relative h-screen bg-primary lg:bg-zinc-200 flex flex-col items-center font-quickSand">
@@ -104,11 +123,7 @@ const productDetail = () => {
                   <h1 className="text-black text-sm font-medium">Metode Pembayaran</h1>
                   <h1 className="text-black text-sm font-semibold">Gopay</h1>
                 </div>
-               
-              </div>
-    
-              <div className="flex flex-col gap-2 px-3 py-5 bg-gray-200 rounded-lg">
-    
+
                 <div className="flex w-full justify-between items-center">
                   <h1 className="text-black text-sm font-medium">Harga</h1>
                   <h1 className="text-black text-sm font-semibold">{formatCurrency(products?.price)}</h1>
@@ -120,34 +135,45 @@ const productDetail = () => {
                   <h1 className="text-black text-sm font-medium">Total Barang</h1>
                   <h1 className="text-black text-sm font-semibold">{total}</h1>
                 </div>
-                
-    
-            
-                <div className="flex w-full justify-between items-center">
-                  <h1 className="text-black text-sm font-medium">voucher</h1>
-                  <h1 className="text-black text-sm font-semibold">{voucher? voucher : "-"}</h1>
-                </div>
-
-                {voucher && <div className="flex w-full justify-end items-center">
-                  <button 
-                  onClick={() => handleClickGunakan()}
-                  className="text-black px-4 py-2 bg-green-500 rounded-lg text-sm font-semibold"
-                  >Gunakan</button>
-                </div>}
                
               </div>
 
-            <div className="flex items-center gap-12 px-3 py-5 justify-center rounded-lg">
+            <div className="bg-gradient-to-r from-primary to-teal-500 rounded-lg shadow-lg p-6">
+            <div className="flex items-center justify-between mb-4">
+                <h1 className="text-white text-sm font-medium">Diskon Rp 10K</h1>
+                {active ? (
+                  use === "Gunakan" ? (
+                    <button
+                      onClick={handleClickGunakan}
+                      className="text-primary bg-white inline-block px-4 py-2 rounded-full text-sm font-semibold"
+                    >{use}</button>
+                    ) : (
+                    <h1 className="text-white text-sm font-semibold">{use}</h1>
+                  )
+                ) : (
+                  <h1 className="text-white text-sm font-medium">Tidak Memenuhi Syarat</h1>
+                )}
+              </div>
+              <div className="border-t border-white pt-2">
+                <p className="text-white text-sm font-medium">code: {voucher?.code}</p>
+                <p className="text-white text-sm font-medium">Berlaku sampai: {voucher?.exp.split("T")[0]}</p>
+              </div>
+              <p className="text-white text-xs mt-4">
+                Minimal pembelian <span className="text-lg font-semibold">Rp 2.000.000</span>
+              </p>
+            </div>
+
+            <div className="flex items-center gap-12 px-2 py-2 justify-center rounded-lg">
             {/* Tombol untuk menambahkan produk */}
             <button
                 onClick={() => handleAddProductPlus()}
-                className="flex p-2 justify-center items-center bg-green-600 rounded-full text-white font-medium text-2xl text-center "
-            ><img src="/plus-icon.svg" className='invert w-7' /></button>
+                className="flex p-2 justify-center items-center bg-primary rounded-full text-secondary font-medium text-2xl text-center "
+            ><img src="/plus-icon.svg" className='w-7'/></button>
 
             <button
                 onClick={() => handleAddProductMinus()}
-                className="flex p-2 justify-center items-center bg-red-600 rounded-full text-white font-medium text-2xl text-center"
-            ><img src="/minus-icon.svg" className='invert w-7'/></button>
+                className="flex p-2 justify-center items-center bg-primary rounded-full text-secondary font-medium text-2xl text-center"
+            ><img src="/minus-icon.svg" className='w-7'/></button>
             </div>
               
               <div className="flex w-full justify-between items-center px-3 py-5 bg-gray-200 rounded-lg">
@@ -157,23 +183,19 @@ const productDetail = () => {
 
             <div className="flex justify-between gap-2 px-3 py-5 bg-gray-200 rounded-lg">
     
-                <div className="flex w-[100px] justify-center items-center bg-green-500 px-4 py-2 rounded-lg">
-                  <button
-                  onClick={() => handleClickBayar()} 
-                  className="text-black text-sm font-medium"
-                  >Bayar</button>
-                </div>
+                <button  onClick={() => handleClickBayar()} 
+                 className="flex w-[100px] justify-center items-center bg-primary px-4 py-2 rounded-lg">
+                  <div
+                  className="text-secondary text-sm font-bold"
+                  >Bayar</div>
+                </button>
 
-                <div className="flex w-[100px] justify-center items-center bg-red-500 px-4 py-2 rounded-lg">
-                  <button
-                  onClick={() => handleClickKembali()} 
-                  className="text-black text-sm font-medium"
-                  >Kembali</button>
-                </div>
-              
-    
-                
-               
+                <button  onClick={() => handleClickKembali()} 
+                 className="flex w-[100px] justify-center items-center bg-primary px-4 py-2 rounded-lg">
+                  <div
+                  className="text-secondary text-sm font-bold"
+                  >Kembali</div>
+                </button>
               </div>
             </div>
           </div>

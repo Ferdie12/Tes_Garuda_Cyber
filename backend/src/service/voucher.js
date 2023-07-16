@@ -12,11 +12,11 @@ const getVoucher = async ({authorization, user_id}) => {
             throw new ResponseError(400, "token expired");
         }
         const voucher = await generate_voucher(data.id);
-        return voucher;
+        return {voucher, id:undefined};
     } else {
         if(user_id){
         const voucher = await generate_voucher(+user_id);
-        return voucher;
+        return {voucher, id:undefined};
         }
 
         const randomString = crypto.randomBytes(Math.ceil(3 / 2)).toString('hex').slice(0, 3);
@@ -35,4 +35,31 @@ const getVoucher = async ({authorization, user_id}) => {
 
 }
 
-export default getVoucher;
+const useVoucher = async ({total_price, code}) => {
+    const today = Date.now();
+    const checked = await prisma.voucher.findFirst({
+        where:{
+            AND: [
+                {code},
+                {is_default: true}
+            ]
+        }
+    });
+    
+    if(!checked){
+        throw new ResponseError(400, "voucher invalid");
+    }
+
+    if(today >= checked.exp){
+        throw new ResponseError(400, "voucher expired")
+    }
+    
+    await prisma.voucher.delete({where: {id: checked.id}});
+
+    const total = +total_price - checked.value
+
+    return total
+      
+}
+
+export default {getVoucher, useVoucher};

@@ -37,15 +37,15 @@ if(check.length == 0){
     await prisma.product.createMany({
         data: [
             {
-                name: "laptop",
+                name: "Laptop",
                 price: 2100000
             },
             {
-                name: "notebook",
+                name: "Notebook",
                 price: 1600000
             },
             {
-                name: "monitor",
+                name: "Monitor",
                 price: 700000
             }
         ]

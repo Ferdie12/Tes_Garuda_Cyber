@@ -41,10 +41,6 @@ const login = async (request) => {
     const user = await prisma.user.findUnique({
         where: {
             email: loginRequest.email
-        },
-        select: {
-            email: true,
-            password: true
         }
     });
 
@@ -65,7 +61,7 @@ const login = async (request) => {
 
     const token = await jwt.sign(payload, JWT_SECRET_KEY, {expiresIn: "1d"});
 
-    return token
+    return {token, name:user.name}
 }
 
 

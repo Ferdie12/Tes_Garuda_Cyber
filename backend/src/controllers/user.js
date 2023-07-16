@@ -21,7 +21,8 @@ export default class User {
             res.status(200).json({
                 status: true,
                 message: "login succes",
-                data: result
+                name: result.name,
+                data: result.token
             });
         } catch (e) {
             next(e);
