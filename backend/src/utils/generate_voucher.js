@@ -10,7 +10,7 @@ const generate_voucher = async (id) => {
       await prisma.voucher.update({ where: { id: check.id }, data: {is_default: false} })
       return {check, use: "voucher telah expired"};
     } else {
-      return {check, use: "voucher telah diguanakan"};
+      return {check, use: "voucher telah digunakan"};
     }
   }
 
