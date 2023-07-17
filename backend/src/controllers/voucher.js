@@ -8,6 +8,7 @@ export default class Voucher {
             return res.status(201).json({
                 status: true,
                 message: "create voucher succes",
+                use: result.use,
                 id: result.id,
                 data: result.voucher
             })

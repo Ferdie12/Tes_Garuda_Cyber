@@ -16,6 +16,8 @@ const productDetail = () => {
     const [voucher, setVoucher] = useState();
     const router = useRouter();
     const token = Cookies.get("token");
+
+    console.log(voucher);
     let productId;
 
     const fetchVoucher= async() => {
@@ -25,10 +27,16 @@ const productDetail = () => {
         axios.defaults.headers.common["authorization"] = Cookies.get("token");
         const response = await axios.get("http://localhost:5000/api/voucher");
         setVoucher(response.data.data);
+        if(response.data.data.is_default == false){
+          setUse(response.data.use)
+        }
       } else if(id){
         axios.defaults.headers.common["user_id"] = Cookies.get("user_id");
         const response = await axios.get("http://localhost:5000/api/voucher");
         setVoucher(response.data.data);
+        if(response.data.data.is_default == false){
+          setUse(response.data.use)
+        }
       } else {
         const response = await axios.get("http://localhost:5000/api/voucher");
         Cookies.set("user_id", response.data.id, {
