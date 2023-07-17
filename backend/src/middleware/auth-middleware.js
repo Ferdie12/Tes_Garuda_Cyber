@@ -1,15 +1,17 @@
+import dotenv from "dotenv";
+dotenv.config();
 import ResponseError from "../error/response-error.js";
 import jwt from "jsonwebtoken";
-const {JWT_SECRET_KEY = "rahasia"} = process.env;
+const {JWT_SECRET_KEY = "secret"} = process.env;
 
-export const authMiddleware = async (req, res, next) => {
+const authMiddleware = async (req, res, next) => {
     try {
         const {authorization} = req.headers;
 
         if (!authorization) {
             throw new ResponseError(400, 'you\'re not authorized!')
         }
-
+        console.log(JWT_SECRET_KEY);
         const data = await jwt.verify(authorization, JWT_SECRET_KEY);
 
         if (!data) {
@@ -19,8 +21,7 @@ export const authMiddleware = async (req, res, next) => {
         req.user = {
             id: data.id,
             name: data.name,
-            email: data.email,
-            role: data.role
+            email: data.email
         };
 
         next();
@@ -28,3 +29,5 @@ export const authMiddleware = async (req, res, next) => {
         next(e);
     }
 }
+
+export default authMiddleware;

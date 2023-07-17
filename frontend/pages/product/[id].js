@@ -1,17 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useRouter } from 'next/router';
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import Cookies from "js-cookie";
 
 const productDetail = () => {
 
     const [products, setProducts] = useState();
     const [use, setUse]= useState("Gunakan");
+    const [id, setId] = useState();
     let [total, setTotal] = useState();
     const [totalPrice, setTotalPrice] = useState(0);
     const [active, setActive]= useState(false);
     const [voucher, setVoucher] = useState();
     const router = useRouter();
+    const token = Cookies.get("token");
     let productId;
 
     const fetchVoucher= async() => {
@@ -42,10 +46,11 @@ const productDetail = () => {
       if (router.query.id) {
         productId = router.query.id;
         console.log(productId);
-        const response = await axios.get(`http://localhost:5000/product/${productId}`);
+        const response = await axios.get(`http://localhost:5000/api/product/${productId}`);
         setProducts(response.data.data)
         setTotal(response.data.total)
         setTotalPrice(response.data.data.price)
+        setId(response.data.data.id)
       }
     }
     
@@ -85,8 +90,15 @@ const productDetail = () => {
         };
       }
 
-      function handleClickBayar(){
-        window.location.href = "/succes";
+      async function handleClickBayar(){
+        if (!token) {
+          toast.error("anda harus login");
+          router.push("/login");
+        } else {
+        axios.defaults.headers.common["authorization"] = token;
+        await axios.post("http://localhost:5000/api/product/buy", {total_price:totalPrice, id})
+        router.push("/succes")
+        }
       }
 
       function handleClickKembali(){
@@ -95,7 +107,7 @@ const productDetail = () => {
 
       async function handleClickGunakan(){
         try {
-          const response = await axios.get(`http://localhost:5000/use?total_price=${totalPrice}&code=${voucher.code}`);
+          const response = await axios.get(`http://localhost:5000/api/use?total_price=${totalPrice}&code=${voucher.code}`);
           if (response.status === 200) {
             setTotalPrice(response.data.data);
             setUse("Voucher telah Digunakan");
@@ -199,6 +211,7 @@ const productDetail = () => {
               </div>
             </div>
           </div>
+          <ToastContainer />
         </div>
       );
 }

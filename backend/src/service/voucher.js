@@ -3,7 +3,7 @@ import crypto from "crypto";
 import ResponseError from "../error/response-error.js";
 import jwt from "jsonwebtoken";
 import generate_voucher from "../utils/generate_voucher.js";
-const {JWT_SECRET_KEY = "rahasia"} = process.env;
+const {JWT_SECRET_KEY} = process.env;
 
 const getVoucher = async ({authorization, user_id}) => {
     if(authorization){

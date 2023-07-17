@@ -16,6 +16,7 @@ model User {
   email String @unique
   password String
   voucher Voucher[]
+  order Order[]
 
   @@map("users")
 }
@@ -24,6 +25,7 @@ model Product {
   id Int @id @default(autoincrement())
   name String
   price Int
+  order Order[]
 
   @@map("product")
 }
@@ -38,4 +40,15 @@ model Voucher {
   user User? @relation(fields: [user_id], references: [id])
 
   @@map("voucher")
+}
+
+model Order {
+  id Int @id @default(autoincrement())
+  user_id Int
+  product_id Int
+  total_price Int
+  user User @relation(fields: [user_id], references: [id])
+  product Product @relation(fields: [product_id], references: [id])
+
+  @@map("order")
 }

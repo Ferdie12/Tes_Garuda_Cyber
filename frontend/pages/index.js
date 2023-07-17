@@ -16,7 +16,7 @@ const Dashboard = () => {
   }
 
   const fetchData = async () => {
-      const response = await axios.get("http://localhost:5000/product");
+      const response = await axios.get("http://localhost:5000/api/product");
       setProducts(response.data.data);
   };
 

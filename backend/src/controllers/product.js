@@ -31,5 +31,19 @@ export default class Product {
         }
     }
 
+    static buyProduct = async (req,res,next) => {
+        try {
+            const result = await productService.buyProduct(req.body, req.user.id);
+
+            return res.status(200).json({
+                status: true,
+                message: "order succes",
+                data: result
+            })
+        } catch (e) {
+            next(e)
+        }
+    }
+
     
 }

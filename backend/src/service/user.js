@@ -7,7 +7,7 @@ import prisma from "../application/database.js";
 import ResponseError from "../error/response-error.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-const {JWT_SECRET_KEY = "rahasia"} = process.env;
+const {JWT_SECRET_KEY} = process.env;
 
 const register = async (request) => {
     const user = validate(registerUserValidation, request);

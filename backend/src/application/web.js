@@ -12,26 +12,11 @@ web.use(cors());
 web.use(morgan("dev"));
 web.use(express.json());
 web.use(express.urlencoded({extended: false}));
-web.use(routes);
+web.use("/api", routes);
 
 web.use(errorMiddleware);
 
 const check = await prisma.product.findMany();
-const today = new Date();
-const lastMonth = new Date(today);
-lastMonth.setMonth(lastMonth.getMonth() - 1);
-const month = lastMonth.getMonth() + 1; 
-await prisma.voucher.updateMany({
-    data: {
-        exp: lastMonth
-    },
-    where: {
-        OR: [
-            { id: 9 },
-            { id: 10 }
-        ]
-    }
-});
 
 if(check.length == 0){
     await prisma.product.createMany({
